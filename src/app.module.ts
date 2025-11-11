@@ -11,7 +11,7 @@ import { ResponseModule } from "./response/response.module";
 import { UserModule } from "./users/user.module";
 import { AuthModule } from "./auth/auth.module";
 import { ProductModule } from "./products/product.module";
-
+import { OrderModule } from "./orders/order.module";
 
 @Module({
   imports: [
@@ -40,8 +40,9 @@ import { ProductModule } from "./products/product.module";
     UserModule,
     AuthModule,
     ProductModule,
+    OrderModule,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule { }
+export class AppModule {}
