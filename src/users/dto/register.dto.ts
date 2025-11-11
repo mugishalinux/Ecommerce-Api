@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
+import { IsEmail, IsIn, IsNotEmpty, IsString, Matches, MinLength } from 'class-validator';
+import { RoleEnum } from '../enums/role.enum'; 
 
 export class RegisterDto {
   @ApiProperty({ example: 'johndoe', description: 'Username (alphanumeric only)' })
@@ -15,9 +16,9 @@ export class RegisterDto {
   @IsNotEmpty()
   email: string;
 
-  @ApiProperty({ 
-    example: 'SecurePass@123', 
-    description: 'Password (min 8 chars, must include uppercase, lowercase, number, and special character)' 
+  @ApiProperty({
+    example: 'SecurePass@123',
+    description: 'Password (min 8 chars, must include uppercase, lowercase, number, and special character)'
   })
   @IsString()
   @IsNotEmpty()
@@ -26,4 +27,15 @@ export class RegisterDto {
     message: 'Password must include at least one uppercase letter, one lowercase letter, one number, and one special character (!@#$%^&*)',
   })
   password: string;
+
+  @ApiProperty({
+    example: RoleEnum.USER,
+    enum: [RoleEnum.USER, RoleEnum.SELLER],
+    description: 'User role (must be either user or seller)',
+  })
+  @IsIn([RoleEnum.USER, RoleEnum.SELLER], {
+    message: 'Role must be either user or seller',
+  })
+  @IsNotEmpty()
+  role: RoleEnum;
 }

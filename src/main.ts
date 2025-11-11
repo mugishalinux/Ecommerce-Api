@@ -3,6 +3,7 @@ import { AppModule } from "./app.module";
 import { ValidationPipe, VersioningType } from "@nestjs/common";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import * as bodyParser from "body-parser";
+import { UserService } from "./users/service/user.service";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -43,8 +44,8 @@ async function bootstrap() {
   app.use(bodyParser.json({ limit: "50mb" }));
   app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 
-  // const userService = app.get(UserService);
-  // await userService.seedAdmin();
+  const userService = app.get(UserService);
+  await userService.seedAdmin();
 
   const port = process.env.NODE_PORT || 3000;
   await app.listen(port);
