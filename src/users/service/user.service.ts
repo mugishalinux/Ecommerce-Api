@@ -18,7 +18,7 @@ export class UserService {
   constructor(
     private readonly response: ResponseService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async register(registerDto: RegisterDto) {
     const foundUserEmail = await this.findUserByEmail(registerDto.email);
@@ -38,7 +38,7 @@ export class UserService {
       user.username = registerDto.username;
       user.email = registerDto.email;
       user.password = registerDto.password;
-      user.role = RoleEnum.USER;
+      user.role = registerDto.role;
 
       const data = await user.save();
       this.logger.log(`User successfully registered with ID: ${data.id}`);
@@ -55,13 +55,13 @@ export class UserService {
       throw new BadRequestException("Invalid credentials");
     }
 
-    const payload = { 
-      userId: user.id, 
-      username: user.username, 
+    const payload = {
+      userId: user.id,
+      username: user.username,
       email: user.email,
-      role: user.role 
+      role: user.role
     };
-    
+
     const token = this.jwtService.sign(payload, {
       expiresIn: process.env.JWT_EXPIRATION || '7d',
     });
@@ -104,13 +104,14 @@ export class UserService {
       username: process.env.ADMIN_USERNAME || 'admin',
       email: process.env.ADMIN_EMAIL || 'admin@ecommerce.com',
       password: process.env.ADMIN_PASSWORD || 'Admin@123',
+      role: RoleEnum.ADMIN
     };
 
     try {
-      const existingAdmin = await User.findOne({ 
-        where: { username: adminData.username } 
+      const existingAdmin = await User.findOne({
+        where: { username: adminData.username }
       });
-      
+
       if (existingAdmin) {
         this.logger.log('Admin user already exists, skipping seeding.');
         return;
