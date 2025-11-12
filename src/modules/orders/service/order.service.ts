@@ -1,11 +1,11 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { Order } from "../entity/order.entity";
-import { OrderItem } from "../entity/order.item.entity";
+import { OrderItem } from "../entity/order-item.entity";
 import { Product } from "../../products/entity/product.entity";
 import { PlaceOrderDto } from "../dto/place-order.dto";
+import { ResponseService } from "src/modules/response/response.service";
 import { DataSource } from "typeorm";
-import { OrderStatus } from "../enums/order.status.enum";
-import { ResponseService } from "src/response/response.service";
+import { OrderStatus } from "../enums/order-status.enum";
 
 @Injectable()
 export class OrderService {
@@ -14,7 +14,7 @@ export class OrderService {
   constructor(
     private readonly response: ResponseService,
     private readonly dataSource: DataSource,
-  ) {}
+  ) { }
 
   async placeOrder(placeOrderDto: PlaceOrderDto, userId: string) {
     const queryRunner = this.dataSource.createQueryRunner();
@@ -76,11 +76,14 @@ export class OrderService {
         relations: ['user', 'products', 'products.product'],
       });
 
+      if (!fullOrder) {
+        throw new BadRequestException("Failed to retrieve order after creation");
+      }
       return this.response.fetchResponse({
-        orderId: fullOrder?.id,
-        status: fullOrder?.status,
-        totalPrice: fullOrder?.totalPrice,
-        products: fullOrder?.products.map(item => ({
+        orderId: fullOrder.id,
+        status: fullOrder.status,
+        totalPrice: fullOrder.totalPrice,
+        products: fullOrder.products.map(item => ({
           productId: item.product.id,
           productName: item.product.name,
           quantity: item.quantity,
@@ -90,12 +93,13 @@ export class OrderService {
     } catch (e) {
       await queryRunner.rollbackTransaction();
       this.logger.error("Failed to place order", e);
-      
+
       if (e instanceof NotFoundException || e instanceof BadRequestException) {
         throw e;
       }
       throw new BadRequestException("Failed to place order: " + e.message);
     } finally {
+      // Always release the query runner
       await queryRunner.release();
     }
   }
