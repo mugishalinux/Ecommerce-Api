@@ -1,98 +1,234 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# E-Commerce REST API
+## Features
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+- Multi-Factor Authentication (OTP via email)
+- Product Management with Advanced Filtering
+- Order Processing
+- Rate Limiting Protection
+- Comprehensive API Documentation (Swagger)
+- Unit and E2E Test Coverage
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Technical Stack
 
-## Description
+- **Framework:** NestJS 10.x
+- **Database:** MySQL 8.0
+- **Cache:** Redis 7.x
+- **Message Queue:** Apache Kafka
+- **Authentication:** JWT + Passport
+- **Documentation:** Swagger/OpenAPI
+- **Testing:** Jest + Supertest
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Prerequisites
 
-## Project setup
+### Docker Deployment (Recommended)
+- Docker 20.x or higher
+- Docker Compose 2.x or higher
 
-```bash
-$ npm install
-```
+### Manual Deployment
+- Node.js 18 or higher
+- MySQL 8.0 or higher
+- Redis 7.x or higher
+- Apache Kafka 3.x (optional, for email notifications)
 
-## Compile and run the project
+## Installation
 
-```bash
-# development
-$ npm run start
+### Docker Deployment
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Run tests
+**Step 1: Clone and Configure**
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+git clone proect-repository-url
+cd ecommerce-api
+cp .env.example .env
 ```
 
-## Deployment
+**Step 2: Configure Environment Variables**
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Create the `.env` file with below environment. Replace all placeholder values:
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+```env
+NODE_PORT=7070
+APPLICATION_NAME=ecommerce-api
+
+# Database Configuration
+DATABASE_HOST=mysql
+DATABASE_PORT=3306
+DATABASE_USER=root
+DATABASE_PASSWORD=<your-secure-password>
+DATABASE_DB=ecommerce_db
+
+# Kafka Configuration
+KAFKA_BROKER_URL=kafka:29092
+KAFKA_GROUP_ID=ecommerce-service
+
+# JWT Configuration
+JWT_SECRET=<your-secret-key-minimum-32-characters>
+JWT_EXPIRATION=7d
+
+# Kafka Topics
+SEND_EMAIL_REQUEST_TOPIC=email-notifications
+
+# Redis Configuration
+REDIS_HOST=redis
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# Queue Configuration
+QUEUE_NAME=ecommerce-queue
+QUEUE_RETRIES=3
+QUEUE_DELAY=1000
+QUEUE_MAX_REQUESTS=1000
+QUEUE_DURATION=1000
+QUEUE_CONCURRENCY=200
+
+# Admin User Configuration
+ADMIN_USERNAME=admin
+ADMIN_EMAIL=admin@yourdomain.com
+ADMIN_PASSWORD=<your-secure-password>
+```
+
+**Step 3: Start Services**
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+docker-compose up -d
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+**Step 4: Verify Deployment**
 
-## Resources
+```bash
+docker-compose ps
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+**Step 5: Access Application**
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+- API Endpoint: http://localhost:3000
+- API Documentation: http://localhost:3000
+- Kafka UI (Kafdrop): http://localhost:9001 (for view messeages passed like otp messages)
 
-## Support
+**Step 6: View Logs**
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+# All services
+docker-compose logs -f
 
-## Stay in touch
+# Specific service
+docker-compose logs -f app
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+**Step 7: Stop Services**
+
+```bash
+# Stop services
+docker-compose down
+
+# Stop and remove volumes
+docker-compose down -v
+```
+
+### Manual Deployment
+
+**Step 1: Install Dependencies**
+
+```bash
+npm install
+```
+
+**Step 2: Configure Environment**
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your local configuration:
+
+```env
+NODE_PORT=3000
+APPLICATION_NAME=ecommerce-api
+
+# Database Configuration (Local)
+DATABASE_HOST=127.0.0.1
+DATABASE_PORT=3306
+DATABASE_USER=root
+DATABASE_PASSWORD=<your-mysql-password>
+DATABASE_DB=ecommerce_db
+
+# Kafka Configuration (Local)
+KAFKA_BROKER_URL=localhost:9092
+KAFKA_GROUP_ID=ecommerce-service
+
+# JWT Configuration
+JWT_SECRET=<your-secret-key-minimum-32-characters>
+JWT_EXPIRATION=7d
+
+# Kafka Topics
+SEND_EMAIL_REQUEST_TOPIC=email-notifications
+
+# Redis Configuration (Local)
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# Queue Configuration
+QUEUE_NAME=ecommerce-queue
+QUEUE_RETRIES=3
+QUEUE_DELAY=1000
+QUEUE_MAX_REQUESTS=1000
+QUEUE_DURATION=1000
+QUEUE_CONCURRENCY=200
+
+# Admin User Configuration
+ADMIN_USERNAME=admin
+ADMIN_EMAIL=admin@yourdomain.com
+ADMIN_PASSWORD=<your-secure-password>
+```
+
+**Step 3: Initialize Database**
+
+```bash
+mysql -u root -p
+CREATE DATABASE ecommerce_db;
+exit;
+```
+
+**Step 4: Start Required Services**
+
+```bash
+# Start Redis
+redis-server
+
+# Start Kafka (optional)
+# Terminal 1: Start Zookeeper
+bin/zookeeper-server-start.sh config/zookeeper.properties
+
+# Terminal 2: Start Kafka
+bin/kafka-server-start.sh config/server.properties
+```
+
+**Step 5: Run Application**
+
+```bash
+# Development mode
+npm run start:dev
+
+# Production mode
+npm run build
+npm run start:prod
+```
+
+## API Documentation
+
+The API documentation is automatically generated using Swagger/OpenAPI and is available at:
+
+**Swagger UI:** http://localhost:3000
+
+All endpoints include detailed descriptions, request/response schemas, and example payloads.
+
+## User Roles and Permissions
+
+### Administrator
+The administrator account is automatically created on application startup using credentials from the `.env` file.
+
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+MIT License

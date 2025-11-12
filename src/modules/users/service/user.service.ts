@@ -174,9 +174,9 @@ export class UserService {
 
   async seedAdmin() {
     const adminData: RegisterDto = {
-      username: process.env.ADMIN_USERNAME || 'admin',
-      email: process.env.ADMIN_EMAIL || 'admin@ecommerce.com',
-      password: process.env.ADMIN_PASSWORD || 'Admin@123',
+      username: process.env.ADMIN_USERNAME!,
+      email: process.env.ADMIN_EMAIL!,
+      password: process.env.ADMIN_PASSWORD!,
       role: RoleEnum.ADMIN
     };
 
