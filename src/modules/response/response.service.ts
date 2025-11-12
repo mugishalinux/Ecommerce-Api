@@ -6,7 +6,7 @@ export class ResponseService {
   postResponse(id: string): ResponseDto {
     return {
       success: true,
-      message: "Record created successfully",
+      message: "Resource created successfully",
       object: { id },
       errors: undefined,
     };
@@ -15,7 +15,7 @@ export class ResponseService {
   updateResponse(id: string): ResponseDto {
     return {
       success: true,
-      message: "Record updated successfully",
+      message: "Resource updated successfully",
       object: { id },
       errors: undefined,
     };
@@ -24,7 +24,7 @@ export class ResponseService {
   deleteResponse(): ResponseDto {
     return {
       success: true,
-      message: "Record deleted successfully",
+      message: "Resource deleted successfully",
       object: null,
       errors: undefined,
     };

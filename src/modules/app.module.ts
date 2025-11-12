@@ -1,17 +1,19 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { DatabaseConnectionService } from "./config/db";
 import { ScheduleModule } from "@nestjs/schedule";
 import { BullModule } from "@nestjs/bull";
 import { PassportModule } from "@nestjs/passport";
 import { JwtModule } from "@nestjs/jwt";
-import { UserModule } from "./modules/users/user.module";
-import { HelperModule } from "./modules/helpers/helper.module";
-import { AuthModule } from "./modules/auth/auth.module";
-import { ResponseModule } from "./modules/response/response.module";
-import { ProductModule } from "./modules/products/product.module";
-import { OrderModule } from "./modules/orders/order.module";
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { HelperModule } from "./helpers/helper.module";
+import { ResponseModule } from "./response/response.module";
+import { UserModule } from "./users/user.module";
+import { AuthModule } from "./auth/auth.module";
+import { ProductModule } from "./products/product.module";
+import { OrderModule } from "./orders/order.module";
+import { DatabaseConnectionService } from "src/config/db";
 
 @Module({
   imports: [
@@ -27,10 +29,14 @@ import { OrderModule } from "./modules/orders/order.module";
         password: process.env.REDIS_PASSWORD,
       },
     }),
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 10,
+    }]),
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: process.env.JWT_EXPIRATION || '7d' },
+      signOptions: { expiresIn: process.env.JWT_EXPIRATION || '1d' },
     }),
     BullModule.registerQueue({
       name: process.env.QUEUE_NAME,
@@ -43,6 +49,11 @@ import { OrderModule } from "./modules/orders/order.module";
     OrderModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
-export class AppModule {}
+export class AppModule { }

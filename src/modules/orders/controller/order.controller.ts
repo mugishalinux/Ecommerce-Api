@@ -2,8 +2,8 @@ import { Body, Controller, Get, Post, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { OrderService } from '../service/order.service';
 import { PlaceOrderDto } from '../dto/place-order.dto';
-import { AuthGuarded } from 'src/auth/roles.decorator';
-import { RoleEnum } from 'src/users/enums/role.enum';
+import { AuthGuarded } from 'src/modules/auth/roles.decorator';
+import { RoleEnum } from 'src/modules/users/enums/role.enum';
 
 @ApiTags('Orders')
 @Controller({ version: '1', path: '/orders' })
@@ -11,7 +11,7 @@ export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Post()
-  @AuthGuarded(RoleEnum.USER, RoleEnum.ADMIN, RoleEnum.SELLER)
+  @AuthGuarded(RoleEnum.USER, RoleEnum.ADMIN)
   @ApiOperation({ summary: 'Place a new order' })
   @ApiResponse({ status: 201, description: 'Order placed successfully' })
   @ApiResponse({ status: 400, description: 'Bad request - insufficient stock or invalid product' })
@@ -21,7 +21,7 @@ export class OrderController {
   }
 
   @Get()
-  @AuthGuarded(RoleEnum.USER, RoleEnum.ADMIN, RoleEnum.SELLER)
+  @AuthGuarded(RoleEnum.USER, RoleEnum.ADMIN)
   @ApiOperation({ summary: 'Get my order history' })
   @ApiResponse({ status: 200, description: 'Orders retrieved successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized - authentication required' })

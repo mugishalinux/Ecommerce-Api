@@ -10,8 +10,8 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { User } from "../../users/entity/user.entity";
-import { OrderItem } from "./order.item.entity";
-import { OrderStatus } from "../enums/order.status.enum";
+import { OrderItem } from "./order-item.entity";
+import { OrderStatus } from "../enums/order-status.enum";
 
 @Entity("orders")
 export class Order extends BaseEntity {

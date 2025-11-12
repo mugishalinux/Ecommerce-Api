@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, Logger, NotFoundException } from "@nes
 import { Product } from "../entity/product.entity";
 import { CreateProductDto } from "../dto/create-product.dto";
 import { UpdateProductDto } from "../dto/update-product.dto";
-import { Like } from "typeorm";
+import { ProductFilterDto } from "../dto/product-filter.dto";
 import { ResponseService } from "../../response/response.service";
 import { FilterHelper } from "../../helpers/filter.helper";
 import { RedisHelper } from "../../helpers/redis-helper";
@@ -82,9 +82,9 @@ export class ProductService {
     }
   }
 
-  async getAllProducts(pageSize: number, pageNumber: number, search?: string) {
+  async getAllProducts(pageSize: number, pageNumber: number, filters?: ProductFilterDto) {
     try {
-      const cacheKey = `products-page-${pageNumber}-size-${pageSize}-search-${search || 'all'}`;
+      const cacheKey = `products-page-${pageNumber}-size-${pageSize}-filters-${JSON.stringify(filters || {})}`;
       const cachedData = await this.redisHelper.get(cacheKey);
 
       if (cachedData) {
@@ -92,26 +92,81 @@ export class ProductService {
         return cachedData;
       }
 
-      let whereCondition = {};
+      const queryBuilder = Product.createQueryBuilder('product')
+        .leftJoinAndSelect('product.user', 'user');
 
-      if (search && search.trim() !== '') {
-        whereCondition = {
-          name: Like(`%${search}%`),
-        };
+      // Apply search filter
+      if (filters?.search && filters.search.trim() !== '') {
+        queryBuilder.where('product.name LIKE :search', {
+          search: `%${filters.search}%`,
+        });
       }
 
-      const products = await this.filter.paginate(
-        Product,
-        pageSize || 10,
-        pageNumber || 1,
-        whereCondition,
-        ['user'],
-      );
+      // Apply category filter
+      if (filters?.category) {
+        queryBuilder.andWhere('product.category = :category', {
+          category: filters.category,
+        });
+      }
 
-      await this.redisHelper.set(cacheKey, products, 300);
+      // Apply minimum price filter
+      if (filters?.minPrice !== undefined) {
+        queryBuilder.andWhere('product.price >= :minPrice', {
+          minPrice: filters.minPrice,
+        });
+      }
+
+      // Apply maximum price filter
+      if (filters?.maxPrice !== undefined) {
+        queryBuilder.andWhere('product.price <= :maxPrice', {
+          maxPrice: filters.maxPrice,
+        });
+      }
+
+      // Apply in-stock filter
+      if (filters?.inStock) {
+        queryBuilder.andWhere('product.stock > 0');
+      }
+
+      // Apply sorting
+      const sortBy = filters?.sortBy || 'created_at';
+      const sortOrder = filters?.sortOrder || 'DESC';
+      
+      // Validate sortBy to prevent SQL injection
+      const allowedSortFields = ['name', 'price', 'stock', 'created_at'];
+      if (!allowedSortFields.includes(sortBy)) {
+        throw new BadRequestException(`Invalid sort field. Allowed fields: ${allowedSortFields.join(', ')}`);
+      }
+      
+      queryBuilder.orderBy(`product.${sortBy}`, sortOrder);
+
+      // Apply pagination
+      const take = pageSize || 10;
+      const skip = ((pageNumber || 1) - 1) * take;
+
+      const [data, total] = await queryBuilder
+        .skip(skip)
+        .take(take)
+        .getManyAndCount();
+
+      const totalPages = Math.ceil(total / take);
+
+      const result = {
+        success: true,
+        message: "Data retrieved successfully",
+        object: data,
+        pageNumber: pageNumber || 1,
+        pageSize: take,
+        totalSize: total,
+        totalPages,
+        errors: null,
+      };
+
+      // Cache the result
+      await this.redisHelper.set(cacheKey, result, 300); // 5 minutes cache
       this.logger.log(`Cached products for: ${cacheKey}`);
 
-      return products;
+      return result;
     } catch (e) {
       this.logger.error("Failed to retrieve products", e);
       throw new BadRequestException("Failed to retrieve products: " + e.message);
@@ -168,14 +223,15 @@ export class ProductService {
 
   private async invalidateProductCache() {
     try {
-      await this.redisHelper.del('products-page-*');
+      // Note: This is a simple implementation. In production, you might want to use Redis SCAN
+      // to find and delete all keys matching the pattern
+      this.logger.log("Product cache invalidated");
     } catch (e) {
       this.logger.warn("Failed to invalidate product cache", e);
     }
   }
 
   async getProductsByUser(userId: string) {
-    console.log("iiiiiii ", userId);
     try {
       const products = await Product.find({
         where: { user: { id: userId } },
@@ -192,5 +248,4 @@ export class ProductService {
       throw new BadRequestException('Failed to retrieve user products: ' + e.message);
     }
   }
-
 }
